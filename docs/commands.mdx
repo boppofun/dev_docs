@@ -1,0 +1,252 @@
+---
+id: commands
+title: Commands
+---
+
+# Device Commands
+
+Boppo exposes a minimal shell command interface for device management, debugging, and development.
+These commands may change or be removed at any time.
+
+Commands are a single line. Each argument may be single quote enclosed. There is currently no way to escape single quotes.
+
+The following commands can be executed via NFC Tags, HTTPS /command endpoint, or via USB serial port. Most of the commands require [developer mode](./developer-mode) to be enabled.
+
+---
+
+## Settings
+
+### `volume [VALUE]`
+Get or set the device volume.
+- No argument: prints the current volume level.
+- `VALUE`: integer `0–255` to set the volume.
+
+### `volume_limit [VALUE]`
+Get or set the maximum allowable volume.
+- No argument: prints the current volume limit.
+- `VALUE`: integer `0–255` to set the limit.
+
+### `brightness [VALUE]`
+Get or set the display brightness.
+- No argument: prints the current brightness level.
+- `VALUE`: integer `0–255` to set the brightness.
+
+### `dev_mode [true|false]`
+Get or set developer mode.
+- No argument: prints whether dev mode is enabled or disabled.
+- `true` / `false`: enables or disables dev mode.
+
+### `airplane_mode [true|false]`
+Get or set airplane mode (disables wireless).
+- No argument: prints current airplane mode state.
+- `true` / `false`: enables or disables airplane mode.
+
+### `auto_update [true|false]`
+Get or set automatic OTA update behavior.
+- No argument: prints current auto-update state.
+- `true` / `false`: enables or disables auto-update.
+
+### `top_buttons_wakeup [true|false]`
+Get or set whether the top physical buttons can wake the device from sleep.
+- No argument: prints current state.
+- `true` / `false`: enables or disables.
+
+### `ota_id`
+Prints the current OTA ID. The OTA ID is sent to the OTA server and used to track if updates are successful. Takes no arguments.
+
+### `password`
+Prints the device password. Takes no arguments.
+
+### `factory_reset`
+Erases the config directory, cache directory, and NVS flash, then restarts the device. **This is destructive and irreversible.** Takes no arguments.
+
+---
+
+## Power Management
+
+### `restart`
+Performs a hardware soft restart. Takes no arguments.
+- alias: `r`
+
+### `sleep [OPTIONS]`
+Puts the device to sleep. Delegates to the sleep activity with any provided arguments.
+
+### `deep_sleep`
+Forces the device into deep sleep mode. Takes no arguments.
+
+### `deep_sleep_count`
+Prints the number of times the device has woken from deep sleep since boot. Takes no arguments.
+
+### `shipmode`
+Puts the device into ship mode by cutting battery power (BATFET off). **This will power off the device.** Takes no arguments.
+
+---
+
+## WiFi
+
+### `wifi`
+Prints WiFi connection debug info (SSID, IP, signal strength, etc.). Takes no arguments.
+
+### `add_wifi_network <SSID> [PASSWORD]`
+Saves a WiFi network and attempts to connect.
+- `SSID`: the network name (required).
+- `PASSWORD`: the network password (optional, defaults to empty).
+
+### `wifi_networks`
+Lists all saved WiFi networks. Takes no arguments.
+
+### `clear_wifi_networks`
+Removes all saved WiFi networks. Takes no arguments.
+
+### `http_get <URL> <DEST> [BUFFER_SIZE]`
+Downloads a file from a URL and saves it to a local path.
+- `URL`: HTTP/HTTPS URL to fetch.
+- `DEST`: local file path to save the response.
+- `BUFFER_SIZE`: optional download buffer size in bytes.
+
+---
+
+## Activity Management
+
+### `start <ACTIVITY> [ARGS...]`
+Starts an activity by name with optional arguments.
+
+```
+start bop_a_mole
+```
+
+### `fp_start <FACEPLATE> <ACTIVITY> [ARGS...]`
+Starts an activity associated with a specific faceplate. This ensures the activity stops when the faceplate is removed.
+- `FACEPLATE`: the faceplate identifier.
+- `ACTIVITY` and any remaining args are passed to the activity.
+
+### `shortcut <NAME>`
+Loads and executes a named shortcut. The shortcut must exist in the shortcuts directory.
+
+### `faceplate <NAME> <ORIENTATION> <CODE> <AUTHORIZATION>`
+
+Handles a faceplate attachment event.
+- `NAME`: faceplate identifier.
+- `ORIENTATION`: `0` or `180`.
+- `CODE`: code for the faceplate.
+- `AUTHORIZATION`: authorization string.
+
+If a `.fp` file for the faceplate exists locally, its menu command is applied. Otherwise, the faceplate package is downloaded via OTA.
+
+### `script <FILE_PATH>`
+Executes a script file where each line is a command. Lines are executed sequentially; an error on any line stops execution.
+
+---
+
+## Filesystem
+
+### `ls <PATH>`
+Lists the contents of a directory, showing file sizes and paths.
+
+### `rm [-r] <PATH>`
+Removes a file or directory.
+- No flag: removes a single file.
+- `-r`: recursively removes a directory and all its contents.
+
+### `mv <FROM> <TO>`
+Renames or moves a file. 
+
+### `stat <PATH>`
+Prints metadata for a file or directory: type, size in bytes, and read-only status.
+
+### `cat <PATH>`
+Prints the contents of a file followed by a byte count summary.
+
+### `create_file <PATH> [CONTENTS]`
+Creates or overwrites a file.
+- `PATH`: destination file path.
+- `CONTENTS`: optional string of content to write (defaults to empty).
+
+---
+
+## Hardware Info
+
+### `info`
+Prints full device info as JSON (firmware version, hardware details, etc.). Takes no arguments.
+- alias: `i`
+
+### `version`
+Prints firmware version info as JSON. Takes no arguments.
+- alias: `v`
+
+### `debug_info`
+Runs a predefined set of diagnostic commands and prints their combined output. Useful for bug reports.
+
+### `secure_boot`
+Prints whether secure boot is enabled on the device. Takes no arguments.
+
+### `memory`
+Dumps current heap memory info to the log. Takes no arguments.
+
+### `interrupts` / `intr`
+Dumps the ESP32 interrupt allocation table to the log. Takes no arguments.
+
+### `gpios`
+Dumps GPIO pin configuration for all valid GPIOs. Takes no arguments.
+
+### `speaker`
+Prints speaker hardware debug info (state, driver details, etc.). Takes no arguments.
+
+### `headphones`
+Prints headphone jack debug info. Takes no arguments.
+
+### `power [true|false]`
+Prints power management debug info.
+- No argument or `false`: prints summary info.
+- `true`: includes raw register values.
+
+### `cpu_freq`
+Prints the current CPU frequency. Takes no arguments.
+
+### `pm_dump_locks`
+Dumps active power management locks to the log. Takes no arguments.
+
+---
+
+## System
+
+### `set_orientation <0|180>`
+Sets the display orientation.
+- `0`: normal orientation.
+- `180`: flipped/rotated 180°.
+
+### `disable_tiny_usb`
+Disables TinyUSB and writes a marker file so USB remains disabled across reboots. Takes no arguments.
+
+### `enable_tiny_usb`
+Removes the TinyUSB disable marker and re-initializes TinyUSB. Takes no arguments.
+
+### `time`
+Prints the number of seconds since the Unix epoch. Takes no arguments. Note that Boppo does not currently try to keep accurate time.
+
+### `panic`
+Triggers a Rust panic. Useful for testing crash handling. Takes no arguments.
+
+### `consume_mem <NUM_BYTES>`
+Intentionally leaks the specified number of bytes of heap memory. Useful for memory pressure testing.
+
+---
+
+## Performance Tests
+
+### `qoa_decode_perf_test`
+Benchmarks QOA audio decoding: measures time to first sample and decoding rate for 48,000 samples. Takes no arguments.
+
+### `mp3_decode_perf_test`
+Benchmarks MP3 audio decoding: measures time to first sample and decoding rate for 48,000 samples. Takes no arguments.
+
+### `file_perf_tests`
+Runs the full suite of file I/O performance benchmarks. Takes no arguments.
+
+### `sound_machine_perf_test [NUM_SECONDS]`
+Benchmarks sound machine audio decoding performance.
+- `NUM_SECONDS`: duration of audio to decode (default: `10`).
+
+### `sine_waves_perf_test [NUM_SECONDS]`
+Benchmarks sine wave audio generation performance.
+- `NUM_SECONDS`: duration to test (default: `10`).

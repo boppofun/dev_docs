@@ -1,0 +1,27 @@
+---
+id: developer-mode
+title: Developer Mode
+---
+
+Developer Mode changes the behavior of Boppo. It is not intended for most users but people developing for Boppo or building on top of Boppo.
+**Enabling developer mode may make your Boppo less secure and makes it possible to make your Boppo no longer function correctly. Please use with caution.**
+
+## Enabling/Disabling Developer Mode
+
+To enable developer mode, follow these steps:
+
+1. Go to the tablet's "Settings" menu by pressing the side Home and Power buttons at the same time.
+2. Select "Device Info"
+3. Press and hold for 5 seconds the outer 2 buttons on each side of the tablet (4 buttons total).
+4. You should hear "Developer Mode Enabled" or "Developer Mode Disabled"
+
+## Changes in Developer Mode
+
+When Developer Mode is enabled, the following changes take effect:
+
+* Some HTTPS file endpoints (e.g. /files/upload) no longer restrict operations to the allowed list of directories
+* Some HTTPS endpoints (e.g. /files/remove-dir) are now available.
+* The `/command` HTTPS endpoint allows all commands to be executed.
+* The RFID reader allows all commands to be executed.
+* All commands are executable over USB serial
+* More changes are likely in the future

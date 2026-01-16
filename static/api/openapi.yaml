@@ -1,0 +1,311 @@
+openapi: 3.0.0
+info:
+  title: Boppo Device HTTP API
+  version: 1.0.0
+  description: |
+    The Boppo tablet runs its own HTTPS server with multiple endpoints documented here.
+
+    Boppo uses mDNS and its hostname is `boppo-<SERIAL_NUMBER>.local`.
+
+    The serial number is printed on the bottom of the Boppo tablet.
+
+    Each Boppo device uses a certificate signed by a Boppo Device CA. For simplicity the curl examples
+    below use the `-k` flag to bypass certificate verification but you can also provide `--cacert BoppoDeviceCA.crt`.
+    You can download the [Boppo Device CA cert](/BoppoDeviceCA.crt)
+
+    Most endpoints require authentication. The authentication is a Bearer token
+    which is an auto-generated password. You can retrieve the password using the /get-password endpoint
+    which will prompt for user permission.
+
+    ```bash
+    curl -k -X POST https://boppo-<SERIAL_NUMBER>.local/get-password?requestid=1234356789
+    ```
+
+    An example curl command using a bearer token:
+
+    ```bash
+    curl -k -H "Authorization: Bearer <PASSWORD>" https://boppo-<SERIAL_NUMBER>.local/get-info
+    ```
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: password
+
+security:
+  - bearerAuth: []
+
+paths:
+  /:
+    get:
+      summary: Index
+      description: Returns a link to this API documentation.
+      security: []
+      responses:
+        "200":
+          description: A successful response.
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /set-device-name:
+    post:
+      summary: Set Device Name
+      description: Sets the name of the device.
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+              example: "My Boppo"
+      responses:
+        "200":
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized.
+
+  /set-brightness:
+    post:
+      summary: Set Brightness
+      description: Sets the screen brightness. Deprecated use /command "brightness"
+      deprecated: true
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: integer
+              format: uint8
+              example: 128
+      responses:
+        "200":
+          description: Brightness set successfully.
+        "401":
+          description: Unauthorized.
+
+  /set-volume:
+    post:
+      summary: Set Volume
+      description: Sets the device volume. Deprecated use /command "volume"
+      deprecated: true
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: integer
+              format: uint8
+              example: 100
+      responses:
+        "200":
+          description: Volume set successfully.
+        "401":
+          description: Unauthorized.
+
+  /get-info:
+    get:
+      summary: Get Device Info
+      description: Retrieves current information about the device.
+      responses:
+        "200":
+          description: A JSON object with device information.
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          description: Unauthorized.
+
+  /files/upload:
+    post:
+      summary: Upload File
+      description: |
+        Uploads a file to the device. The `path` query parameter specifies the destination.
+        Requires developer mode for paths outside of `/sd/activities/user/`.
+      parameters:
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The full path where the file should be stored.
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "200":
+          description: File uploaded successfully.
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Developer mode not enabled for the specified path.
+
+  /files/remove-file:
+    post:
+      summary: Remove File
+      description: |
+        Removes a file from the device.
+        Requires developer mode for paths outside of `/sd/activities/user/`.
+      parameters:
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The path of the file to remove.
+      responses:
+        "200":
+          description: File removed successfully.
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Developer mode not enabled for the specified path.
+
+  /files/remove-dir:
+    post:
+      summary: Remove Directory
+      description: Removes a directory. Requires developer mode.
+      parameters:
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The path of the directory to remove.
+      responses:
+        "200":
+          description: Directory removed successfully.
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Developer mode not enabled.
+
+  /files/remove-dir-all:
+    post:
+      summary: Remove Directory Recursively
+      description: Removes a directory and all its contents. Requires developer mode.
+      parameters:
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The path of the directory to remove.
+      responses:
+        "200":
+          description: Directory removed successfully.
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Developer mode not enabled.
+
+  /files/read-dir:
+    get:
+      summary: Read Directory
+      description: |
+        Lists the contents of a directory.
+        Requires developer mode for paths outside of `/sd/activities/user/`.
+      parameters:
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The path of the directory to list.
+      responses:
+        "200":
+          description: A list of files and directories.
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Developer mode not enabled for the specified path.
+        "404":
+          description: Directory not found.
+
+  /files/download:
+    get:
+      summary: Download File
+      description: Downloads a file from the device. Requires developer mode.
+      parameters:
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The path of the file to download.
+      responses:
+        "200":
+          description: The file content.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Developer mode not enabled.
+
+  /get-password:
+    post:
+      summary: Get Password
+      description: |
+        Used for pairing the device. This endpoint is not authenticated.
+        The client provides a `requestid` and polls this endpoint.
+        The user on the device approves the request, and the password is returned.
+      security: []
+      parameters:
+        - name: requestid
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: A unique ID for the pairing request.
+      responses:
+        "200":
+          description: The status of the pairing request or the password.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [in-progress, failed, success]
+                  password:
+                    type: string
+                example:
+                  status: success
+                  password: "your-device-password"
+
+  /command:
+    post:
+      summary: Execute Command
+      description: |
+        Executes a command on the device.
+        Some commands like `start`, `top_buttons_wakeup`, and `auto_update` are always available.
+        Other commands require [developer mode](/docs/developer-mode) to be enabled.
+        See the [command reference](/docs/commands) for available commands.
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+              example: "start my_activity"
+      responses:
+        "200":
+          description: The command output.
+        "403":
+          description: Developer mode not enabled for this command.

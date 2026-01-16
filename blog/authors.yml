@@ -1,0 +1,10 @@
+benhansen:
+  name: Ben Hansen
+  title: Inventor and CTO of Boppo
+  url: https://linkedin.com/in/benhansen-io
+  image_url: https://github.com/benhansen-io.png
+  page: true
+  socials:
+    linkedin: benhansen-io
+    github: benhansen-io
+    newsletter: https://www.benhansen.io
