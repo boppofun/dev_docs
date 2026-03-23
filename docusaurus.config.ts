@@ -43,8 +43,7 @@ const config: Config = {
           sidebarPath: "./sidebars.ts",
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/boppofun/dev_docs/tree/main/packages/create-docusaurus/templates/shared/",
+          editUrl: "https://github.com/boppofun/dev_docs/tree/main/",
         },
         blog: false,
         theme: {
@@ -72,7 +71,7 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: "Boppo",
+      title: "Boppo Developer",
       logo: {
         alt: "Boppo Logo",
         src: "img/favicon.png",
