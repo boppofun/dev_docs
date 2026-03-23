@@ -128,7 +128,7 @@ paths:
       summary: Upload File
       description: |
         Uploads a file to the device. The `path` query parameter specifies the destination.
-        Requires developer mode for paths outside of `/sd/activities/user/`.
+        Requires developer mode for paths outside of `/sd/{activities,config}/user/`.
       parameters:
         - name: path
           in: query
@@ -149,7 +149,7 @@ paths:
         "401":
           description: Unauthorized.
         "403":
-          description: Developer mode not enabled for the specified path.
+          description: Developer mode not enabled and is required for the specified path.
 
   /files/remove-file:
     post:
@@ -170,7 +170,7 @@ paths:
         "401":
           description: Unauthorized.
         "403":
-          description: Developer mode not enabled for the specified path.
+          description: Developer mode not enabled and is required for the specified path.
 
   /files/remove-dir:
     post:
