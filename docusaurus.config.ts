@@ -85,7 +85,7 @@ const config: Config = {
         },
         { to: "/api", label: "HTTPS API", position: "left" },
         {
-          href: "https://github.com/boppofun/dev_docs",
+          href: "https://github.com/boppofun",
           label: "GitHub",
           position: "right",
         },
