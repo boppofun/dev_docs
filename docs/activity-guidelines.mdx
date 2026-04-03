@@ -1,0 +1,26 @@
+# Activity Guidelines
+
+## Reactivity
+
+* Reward player interaction with reactions even if the interaction was
+  incorrect.
+* In code avoid sleeping without listening for button presses.
+  Do not make the player wait for you.
+
+## Feedback
+
+* Try to always have at least one light showing when an activity is active
+  (perhaps dim) so it is obvious the device is on and waiting for interaction
+  instead of being off.
+
+## Audio
+
+* Do not allow for an unbounded number of sounds to be played simulataneously.
+  The tablet can only play about 10 QOA sounds from SD card simulataneously and
+  even playing from RAM hits a limit quickly. If a sound is played for every
+  button press make sure previous presses are cancelled.
+
+* Sound effect audio clips played in response to button presses should have
+  virtually no deadspace at the start. If the clip will be followed by other
+  clips, dead space for appropriate spacing should be at the end of the first
+  clip.
