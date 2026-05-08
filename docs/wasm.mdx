@@ -29,9 +29,13 @@ not yet available).
 
 #### boppo_poll_events(timeout_millis: i32) -> i64
 
-If timeout_millis is less than 0, the function will block indefinitely until an event occurs. If timeout_millis is greather than 0 the function will return after the timeout if not host event occurred first. If timeout_millis is 0, the function will check for events and return immediately if none are available.
+If timeout_millis is less than 0, the function will block indefinitely until an
+event occurs. If timeout_millis is greather than 0 the function will return
+after the timeout if no host event occurred first. If timeout_millis is 0, the
+function will check for events and return immediately if none are available.
 
-Returns a HostEvent represented as an i64. The least significant byte is the event type, and the remaining bytes are event-specific data.
+Returns a HostEvent represented as an i64. The least significant byte is the
+event type, and the remaining bytes are event-specific data.
 
 Event types:
 
