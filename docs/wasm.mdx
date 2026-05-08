@@ -1,0 +1,79 @@
+---
+id: wasm
+title: Programmable WASM Activities
+toc_max_heading_level: 4
+---
+
+:::info
+COMING SOON: This API is currently in development and will be released soon.
+:::
+
+Boppo provides a WASM API to program new activities, interactive content, and games that run directly on Boppo.
+
+To get started developing your own activities quickly its best to read the documentation for your language of choice:
+
+* Rust: [boppofun/rust_boppo_wasm](https://github.com/boppofun/rust_boppo_wasm)
+* AssemblyScript: coming soon
+* If your preferred langauge does not exist and it has the ability to compile to WASM modules suitable for an ESP32
+[let us know] your interested in a language binding or feel free to build your own using the WASM API below.
+
+## WASM API for Language Bindings
+
+The following APIs are meant to be used by language binding libraries. For activity developers please read the API
+documentation for your language which will wrap the following in a more friendly API.
+
+The Boppo tablet WASM runtime is WASIp1 compatible but not all WASI features are supported (e.g. filesystem APIs are
+not yet available).
+
+### Host Functions
+
+#### boppo_poll_events(timeout_millis: i32) -> i64
+
+If timeout_millis is less than 0, the function will block indefinitely until an event occurs. If timeout_millis is greather than 0 the function will return after the timeout if not host event occurred first. If timeout_millis is 0, the function will check for events and return immediately if none are available.
+
+Returns a HostEvent represented as an i64. The least significant byte is the event type, and the remaining bytes are event-specific data.
+
+Event types:
+
+* 0: **Exit**
+
+    The WASM activity should exit gracefully (i.e. return from the _start/main() function).
+
+    Payload: None
+
+* 1: **Button**
+
+    A top button has been pressed or released.
+
+    Payload: The two *most* signficiant bytes are a 2 byte payload. Of those 2
+    bytes, the least significant 4 bits are the button index of the event. The
+    next 10 bits are the current pressed state (1 is pressed) of all ten 10
+    buttons (in index order). The 15th bit is if the current event is a press
+    event (1) or a release event (0).
+
+* 2: **Audio**
+
+    TBD
+
+* 3: **Timeout**
+
+    The timeout_millis has elapsed without another event occuring.
+
+    Payload: None
+
+#### boppo_set_and_flush_lights(framebuffer_colors: *void)
+
+Sets all 40 of the device lights and flushes the lights to the hardware.
+
+The passed in pointer must point to a buffer of 120 bytes. Each light is represented by a 3 byte color value (RGB).
+
+The ordering of the lights is the same as defined in the Rust [Lights struct](https://docs.rs/boppo_core/latest/boppo_core/struct.Lights.html#ordering)
+
+### Module Exports
+
+#### _start() (required)
+
+As defined by WASIp1 this is the function the runtime will call to start the WASM activity. When this function returns the runtime will return to the active menu.
+
+
+[let us know]: https://github.com/boppofun/feature_requests/issues/28
