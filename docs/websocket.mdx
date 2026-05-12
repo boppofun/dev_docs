@@ -1,0 +1,105 @@
+---
+id: websocket
+title: WebSocket API
+toc_max_heading_level: 4
+---
+
+Boppo exposes a WebSocket API at `ws://boppo-<SERIAL_NUMBER>.local/ws` for real-time control of lights, audio, and button event streaming. 
+
+Connecting to this endpoint automatically starts the `web_socket_server` activity and replacing any currently running activity. Only one WebSocket session is active at a time — a new connection closes any existing one.
+
+## Messages: Device → Client
+
+### Button Events
+
+The device sends a text frame whenever a button is pressed or released:
+
+```
+b <index> <p|r> <currently_pressed>
+```
+
+- `<index>` — zero-based button index (0–9)
+- `p` — button pressed
+- `r` — button released
+- `<currently_pressed>` — a bit set of each of the top 10 buttons encoded as hex where each bit represents a button (1 = pressed, 0 = released)
+
+**Example:** `b 3 p 9` means button index 3 was pressed and button 0 was already pressed
+
+## Messages: Client → Device
+
+All messages are sent as a single WebSocket frame (text or binary). Fragmented messages are not supported.
+
+### `set_lights`
+
+Sets the color of all 40 lights at once.
+
+```
+set_lights <120 bytes>
+```
+
+The frame begins with the ASCII prefix `set_lights ` (note the trailing space) followed immediately by 120 bytes of raw RGB data — 3 bytes per light (red, green, blue), for all 40 lights in order.
+
+The light ordering follows the [Lights struct ordering](https://docs.rs/boppo_core/latest/boppo_core/struct.Lights.html#ordering).
+
+Because the payload contains raw binary after the ASCII prefix, this message should be sent as a binary WebSocket frame.
+
+### `play_sound`
+
+Plays a sound described by a [SoundInstruction](#soundinstruction).
+
+```
+play_sound <json>
+```
+
+The frame is `play_sound ` (with a trailing space) followed by a JSON object:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `sound` | SoundInstruction | Yes | The sound to play |
+| `sound_id` | number | No | If provided, the sound can later be controlled with `modify_sound` |
+| `starting_volume` | number | No | Initial volume multiplier (default: `1.0`) |
+| `starting_speed` | number | No | Initial playback speed multiplier (default: `1.0`) |
+
+If `sound_id` is provided and a sound with that ID is already playing, the old sound is stopped and replaced.
+
+The path of the the SoundInstruction (if any) is relative to "/sd/activities/user/"
+
+**Example — play a file:**
+```
+play_sound {"sound": "my_activity/beep.wav"}
+```
+
+**Example — play a controllable looping sound:**
+```
+play_sound {"sound": {"i": "repeat", "sound": "my_activity/music.wav"}, "sound_id": 1, "starting_volume": 0.8}
+```
+
+See the [SoundInstruction](./sound-instruction) reference for the full format.
+
+### `modify_sound`
+
+Modifies a currently playing sound that was started with a `sound_id`.
+
+```
+modify_sound <json>
+```
+
+The frame is `modify_sound ` (with a trailing space) followed by a JSON object:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `sound_id` | number | Yes | ID of the sound to modify |
+| `paused` | boolean | No | Pause or unpause the sound |
+| `stopped` | boolean | No | Set to `true` to stop and discard the sound |
+| `volume` | number | No | New volume multiplier |
+| `speed` | number | No | New playback speed multiplier |
+
+**Example — pause a sound:**
+```
+modify_sound {"sound_id": 1, "paused": true}
+```
+
+**Example — stop a sound:**
+```
+modify_sound {"sound_id": 1, "stopped": true}
+```

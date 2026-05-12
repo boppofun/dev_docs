@@ -1,0 +1,71 @@
+---
+id: sound-instruction
+title: Sound Instruction
+toc_max_heading_level: 4
+---
+
+A Sound Instruction describes what audio to play. Its in JSON format for network, file and other APIs. The following are the available instructions and their JSON encoding:
+
+### Play a file
+
+A plain string is a path to an audio file, the directory the path is relative to is determined by the context (e.g. directory containing the WASM file for wasm activities, "activities/user/" for WebSocket activities) An absolute path (starting with `/`) is always relative to the root activities directory regardless of context.
+
+```json
+"my_activity/beep.wav"
+```
+
+### List (sequential)
+
+An array plays sounds one after the other.
+
+```json
+["my_activity/intro.wav", "my_activity/loop.wav"]
+```
+
+### Simultaneous
+
+Plays multiple sounds at the same time.
+
+```json
+{"i": "simultaneous", "sounds": ["my_activity/drums.wav", "my_activity/melody.wav"]}
+```
+
+### Repeat
+
+Repeats a sound. Omit `times` to loop forever.
+
+```json
+{"i": "repeat", "sound": "my_activity/tick.wav", "times": 4}
+```
+
+### Silence
+
+Inserts a pause.
+
+```json
+{"i": "silence", "millis": 1500}
+```
+
+### Speak number
+
+Speaks a number aloud using the built-in voice.
+
+```json
+{"i": "speak_number", "number": 42}
+```
+
+### Error sound
+
+Plays the system error sound (a beep).
+
+```json
+{"i": "error_sound"}
+```
+
+### Empty sound
+
+A no-op sound that finishes immediately.
+
+```json
+{"i": "empty_sound"}
+```
