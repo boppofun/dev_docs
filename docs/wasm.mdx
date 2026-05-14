@@ -1,6 +1,6 @@
 ---
 id: wasm
-title: Programmable WASM Activities
+title: WASM API
 toc_max_heading_level: 4
 ---
 
@@ -27,11 +27,11 @@ not yet available).
 
 ### Host Functions
 
-#### boppo_poll_events(timeout_millis: i32) -> i64
+#### boppo_wasm_poll(timeout_ms: i32) -> i64
 
-If timeout_millis is less than 0, the function will block indefinitely until an
-event occurs. If timeout_millis is greather than 0 the function will return
-after the timeout if no host event occurred first. If timeout_millis is 0, the
+If timeout_ms is less than 0, the function will block indefinitely until an
+event occurs. If timeout_ms is greater than 0 the function will return
+after the timeout if no host event occurred first. If timeout_ms is 0, the
 function will check for events and return immediately if none are available.
 
 Returns a HostEvent represented as an i64. The least significant byte is the
@@ -49,7 +49,7 @@ Event types:
 
     A top button has been pressed or released.
 
-    Payload: The two *most* signficiant bytes are a 2 byte payload. Of those 2
+    Payload: The two *most* significant bytes are a 2 byte payload. Of those 2
     bytes, the least significant 4 bits are the button index of the event. The
     next 10 bits are the current pressed state (1 is pressed) of all ten 10
     buttons (in index order). The 15th bit is if the current event is a press
@@ -57,11 +57,18 @@ Event types:
 
 * 2: **Audio**
 
-    TBD
+    An audio playback event occurred. The second byte is the audio sub-event type,
+    and the following 4 bytes are the audio handle (i32, little-endian) the event refers to.
+
+    Sub-event types:
+    * 0: **Finished** — the audio clip finished playing. The activity should call
+      `boppo_unload_audio` to free the associated resources.
+    * 1: **BadHandleError** — a call to `boppo_play_audio` was made with a handle
+      that does not exist or has already been unloaded.
 
 * 3: **Timeout**
 
-    The timeout_millis has elapsed without another event occuring.
+    The timeout_ms has elapsed without another event occurring.
 
     Payload: None
 
@@ -72,6 +79,44 @@ Sets all 40 of the device lights and flushes the lights to the hardware.
 The passed in pointer must point to a buffer of 120 bytes. Each light is represented by a 3 byte color value (RGB).
 
 The ordering of the lights is the same as defined in the Rust [Lights struct](https://docs.rs/boppo_core/latest/boppo_core/struct.Lights.html#ordering)
+
+#### boppo_open_audio_file(id: i32, path_ptr: *const u8, str_length: usize) -> i32
+
+Open an audio file and associate it with a caller-provided integer handle `id`.
+The path must be a UTF-8 string passed as a pointer (`path_ptr`) with its byte length (`str_length`).
+The path is relative to the activity's directory (the folder containing the `.wasm` file).
+Absolute paths are accepted and treated as relative by stripping the leading `/`, matching
+the WASI file mapping convention.
+
+Returns 0 on success, or a negative error code on failure. The `id` can then be used with the
+other audio functions to control playback.
+
+#### boppo_play_audio(handle: i32)
+
+Starts playback of the audio loaded under `handle`. If the audio was previously paused,
+calling this function resumes it. If the audio is already playing, this call is a no-op.
+
+When playback finishes naturally, an **Audio/Finished** host event is sent to the activity.
+The activity should respond by calling `boppo_unload_audio` to free resources.
+
+#### boppo_stop_audio(handle: i32)
+
+Stops playback of the audio loaded under `handle`. The audio clip remains loaded and can
+be replayed with `boppo_play_audio`.
+
+#### boppo_unload_audio(handle: i32)
+
+Stops playback (if in progress) and frees all resources associated with `handle`.
+After this call the handle is invalid.
+
+#### boppo_set_audio_parameter(handle: i32, parameter: i32, value: f32)
+
+Sets a playback parameter on the audio loaded under `handle`. Supported parameter values:
+
+* 0: **Pause** — pause or unpause the clip. `value` of `0.0` unpauses; any other value pauses.
+* 1: **Volume** — set the playback volume. `1.0` is the default level; values above `1.0`
+  amplify the signal.
+* 2: **Speed** — set the playback speed multiplier. `1.0` is normal speed.
 
 ### Module Exports
 
