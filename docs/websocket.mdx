@@ -4,15 +4,25 @@ title: WebSocket API
 toc_max_heading_level: 4
 ---
 
+:::info
+COMING SOON: This API is currently in development and will be released soon.
+:::
+
 Boppo exposes a WebSocket API at `ws://boppo-<SERIAL_NUMBER>.local/ws` for real-time control of lights, audio, and button event streaming. 
 
 Connecting to this endpoint automatically starts the `web_socket_server` activity and replacing any currently running activity. Only one WebSocket session is active at a time — a new connection closes any existing one.
 
+If you are looking to develop an activity using the WebSocket API, you can use an existing library that implements the protocol below.
+
+* Rust: [`boppo_websocket_controller`](https://github.com/boppofun/rust_boppo_websocket_controller)
+
+The API below is the low level networking protocol:
+
 ## Messages: Device → Client
 
-### Button Events
+### Button Event
 
-The device sends a text frame whenever a button is pressed or released:
+The device sends a text frame whenever a top button is pressed or released:
 
 ```
 b <index> <p|r> <currently_pressed>
@@ -24,6 +34,17 @@ b <index> <p|r> <currently_pressed>
 - `<currently_pressed>` — a bit set of each of the top 10 buttons encoded as hex where each bit represents a button (1 = pressed, 0 = released)
 
 **Example:** `b 3 p 9` means button index 3 was pressed and button 0 was already pressed
+
+### Sound Finished
+
+The device sends a text frame whenever a sound finishes playing if `notify_when_finished` was set to `true` when the sound was played:
+
+```
+sound_finished <sound_id>
+```
+
+- `<sound_id>` — the ID of the sound that finished playing
+
 
 ## Messages: Client → Device
 
@@ -43,15 +64,15 @@ The light ordering follows the [Lights struct ordering](https://docs.rs/boppo_co
 
 Because the payload contains raw binary after the ASCII prefix, this message should be sent as a binary WebSocket frame.
 
-### `play_sound`
+### `create_and_play_sound`
 
 Plays a sound described by a [SoundInstruction](#soundinstruction).
 
 ```
-play_sound <json>
+create_and_play_sound <json>
 ```
 
-The frame is `play_sound ` (with a trailing space) followed by a JSON object:
+The frame is `create_and_play_sound ` (with a trailing space) followed by a JSON object:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -59,6 +80,7 @@ The frame is `play_sound ` (with a trailing space) followed by a JSON object:
 | `sound_id` | number | No | If provided, the sound can later be controlled with `modify_sound` |
 | `starting_volume` | number | No | Initial volume multiplier (default: `1.0`) |
 | `starting_speed` | number | No | Initial playback speed multiplier (default: `1.0`) |
+| `notify_when_finished` | number | No | Receive a  (default: false) |
 
 If `sound_id` is provided and a sound with that ID is already playing, the old sound is stopped and replaced.
 
@@ -66,12 +88,12 @@ The path of the the SoundInstruction (if any) is relative to "/sd/activities/use
 
 **Example — play a file:**
 ```
-play_sound {"sound": "my_activity/beep.wav"}
+create_and_play_sound {"sound": "my_activity/beep.wav"}
 ```
 
 **Example — play a controllable looping sound:**
 ```
-play_sound {"sound": {"i": "repeat", "sound": "my_activity/music.wav"}, "sound_id": 1, "starting_volume": 0.8}
+create_and_play_sound {"sound": {"i": "repeat", "sound": "my_activity/music.wav"}, "sound_id": 1, "starting_volume": 0.8}
 ```
 
 See the [SoundInstruction](./sound-instruction) reference for the full format.
@@ -85,6 +107,8 @@ modify_sound <json>
 ```
 
 The frame is `modify_sound ` (with a trailing space) followed by a JSON object:
+
+<!-- TODO rename stopped and paused to not be past tesnse -->
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
