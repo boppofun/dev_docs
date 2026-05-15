@@ -20,12 +20,14 @@ The API below is the low level networking protocol:
 
 ## Messages: Device → Client
 
+All messages are UTF-8 encoded text frames and are sent as a single frame without fragmentation.
+
 ### Button Event
 
 The device sends a text frame whenever a top button is pressed or released:
 
 ```
-b <index> <p|r> <currently_pressed>
+button <index> <p|r> <currently_pressed>
 ```
 
 - `<index>` — zero-based button index (0–9)
@@ -33,7 +35,7 @@ b <index> <p|r> <currently_pressed>
 - `r` — button released
 - `<currently_pressed>` — a bit set of each of the top 10 buttons encoded as hex where each bit represents a button (1 = pressed, 0 = released)
 
-**Example:** `b 3 p 9` means button index 3 was pressed and button 0 was already pressed
+**Example:** `button 3 p 9` means button index 3 was pressed and button 0 was already pressed
 
 ### Sound Finished
 
@@ -45,6 +47,15 @@ sound_finished <sound_id>
 
 - `<sound_id>` — the ID of the sound that finished playing
 
+### Error Message
+
+An error message from the device. These are unstructured and can be logged to aid in debugging.
+
+```
+error_message <message>
+```
+
+- `<message>` — the error message text
 
 ## Messages: Client → Device
 
@@ -77,10 +88,11 @@ The frame is `create_and_play_sound ` (with a trailing space) followed by a JSON
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `sound` | SoundInstruction | Yes | The sound to play |
-| `sound_id` | number | No | If provided, the sound can later be controlled with `modify_sound` |
-| `starting_volume` | number | No | Initial volume multiplier (default: `1.0`) |
-| `starting_speed` | number | No | Initial playback speed multiplier (default: `1.0`) |
-| `notify_when_finished` | number | No | Receive a  (default: false) |
+| `sound_id` | integer | No | If provided, the sound can later be controlled with `modify_sound`. Must fit into an i32 |
+| `volume` | float | No (default: `1.0`) | Initial volume multiplier |
+| `speed` | float | No (default: `1.0`) | Initial playback speed multiplier |
+| `paused` | boolean | No (default: `false`) | Initial paused state. Ignored if `sound_id` is not provided. |
+| `notify_when_finished` | boolean | No (default: `false`) | Receive a notification when the sound finishes playing. Ignored if `sound_id` is not provided. |
 
 If `sound_id` is provided and a sound with that ID is already playing, the old sound is stopped and replaced.
 
@@ -108,13 +120,11 @@ modify_sound <json>
 
 The frame is `modify_sound ` (with a trailing space) followed by a JSON object:
 
-<!-- TODO rename stopped and paused to not be past tesnse -->
-
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `sound_id` | number | Yes | ID of the sound to modify |
-| `paused` | boolean | No | Pause or unpause the sound |
-| `stopped` | boolean | No | Set to `true` to stop and discard the sound |
+| `pause` | boolean | No | Pause or unpause the sound |
+| `stop` | boolean | No | Set to `true` to stop and discard the sound |
 | `volume` | number | No | New volume multiplier |
 | `speed` | number | No | New playback speed multiplier |
 
