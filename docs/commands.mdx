@@ -180,6 +180,9 @@ Runs a predefined set of diagnostic commands and prints their combined output. U
 ### `secure_boot`
 Prints whether secure boot is enabled on the device. Takes no arguments.
 
+### `charge_restricted`
+Prints whether the device is restricted from playing while charging (a factory-configured setting). Takes no arguments.
+
 ### `memory`
 Dumps current heap memory info to the log. Takes no arguments.
 
@@ -220,6 +223,22 @@ Disables TinyUSB and writes a marker file so USB remains disabled across reboots
 
 ### `enable_tiny_usb`
 Removes the TinyUSB disable marker and re-initializes TinyUSB. Takes no arguments.
+
+### `send_midi_usb_note_on <NOTE> [VELOCITY] [CHANNEL]`
+Sends a MIDI Note On message over USB.
+- `NOTE`: MIDI note number `0–127`.
+- `VELOCITY`: velocity `0–127` (default: `127`).
+- `CHANNEL`: MIDI channel `0–15` (default: `0`).
+
+Min Firmware Version: 250
+
+### `send_midi_usb_note_off <NOTE> [VELOCITY] [CHANNEL]`
+Sends a MIDI Note Off message over USB.
+- `NOTE`: MIDI note number `0–127`.
+- `VELOCITY`: velocity `0–127` (default: `0`).
+- `CHANNEL`: MIDI channel `0–15` (default: `0`).
+
+Min Firmware Version: 250
 
 ### `time`
 Prints the number of seconds since the Unix epoch. Takes no arguments. Note that Boppo does not currently try to keep accurate time.
