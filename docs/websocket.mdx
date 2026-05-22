@@ -88,7 +88,7 @@ The frame is `create_and_play_sound ` (with a trailing space) followed by a JSON
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `sound` | SoundInstruction | Yes | The sound to play |
-| `sound_id` | integer | No | If provided, the sound can later be controlled with `modify_sound`. Must fit into an i32 |
+| `sound_id` | integer | No | If provided, the sound can later be controlled with `modify_sound`. Must be a non-negative integer (u32) |
 | `volume` | float | No (default: `1.0`) | Initial volume multiplier |
 | `speed` | float | No (default: `1.0`) | Initial playback speed multiplier |
 | `paused` | boolean | No (default: `false`) | Initial paused state. Ignored if `sound_id` is not provided. |
@@ -105,7 +105,7 @@ create_and_play_sound {"sound": "my_activity/beep.wav"}
 
 **Example — play a controllable looping sound:**
 ```
-create_and_play_sound {"sound": {"i": "repeat", "sound": "my_activity/music.wav"}, "sound_id": 1, "starting_volume": 0.8}
+create_and_play_sound {"sound": {"i": "repeat", "sound": "my_activity/music.wav"}, "sound_id": 1, "volume": 0.8}
 ```
 
 See the [SoundInstruction](./sound-instruction) reference for the full format.
@@ -130,10 +130,30 @@ The frame is `modify_sound ` (with a trailing space) followed by a JSON object:
 
 **Example — pause a sound:**
 ```
-modify_sound {"sound_id": 1, "paused": true}
+modify_sound {"sound_id": 1, "pause": true}
 ```
 
 **Example — stop a sound:**
 ```
-modify_sound {"sound_id": 1, "stopped": true}
+modify_sound {"sound_id": 1, "stop": true}
 ```
+
+### `stop_all_sounds`
+
+Stops all currently playing sounds and clears all tracked sound IDs.
+
+```
+stop_all_sounds
+```
+
+This command takes no arguments.
+
+### `execute_command`
+
+Executes a system command on the device. See [Commands](./commands) for a list of available commands.
+
+```
+execute_command <command>
+```
+
+- `<command>` — the command line to execute
