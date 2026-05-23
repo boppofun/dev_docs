@@ -138,6 +138,26 @@ Executes a script file where each line is a command. Lines are executed sequenti
 
 ---
 
+## MIDI
+
+### `send_midi_usb_note_on <NOTE> [VELOCITY] [CHANNEL]`
+Sends a MIDI Note On message over USB.
+- `NOTE`: MIDI note number `0–127`.
+- `VELOCITY`: velocity `0–127` (default: `127`).
+- `CHANNEL`: MIDI channel `0–15` (default: `0`).
+
+Min Firmware Version: 250
+
+### `send_midi_usb_note_off <NOTE> [VELOCITY] [CHANNEL]`
+Sends a MIDI Note Off message over USB.
+- `NOTE`: MIDI note number `0–127`.
+- `VELOCITY`: velocity `0–127` (default: `0`).
+- `CHANNEL`: MIDI channel `0–15` (default: `0`).
+
+Min Firmware Version: 250
+
+---
+
 ## Filesystem
 
 ### `ls <PATH>`
@@ -223,22 +243,6 @@ Disables TinyUSB and writes a marker file so USB remains disabled across reboots
 
 ### `enable_tiny_usb`
 Removes the TinyUSB disable marker and re-initializes TinyUSB. Takes no arguments.
-
-### `send_midi_usb_note_on <NOTE> [VELOCITY] [CHANNEL]`
-Sends a MIDI Note On message over USB.
-- `NOTE`: MIDI note number `0–127`.
-- `VELOCITY`: velocity `0–127` (default: `127`).
-- `CHANNEL`: MIDI channel `0–15` (default: `0`).
-
-Min Firmware Version: 250
-
-### `send_midi_usb_note_off <NOTE> [VELOCITY] [CHANNEL]`
-Sends a MIDI Note Off message over USB.
-- `NOTE`: MIDI note number `0–127`.
-- `VELOCITY`: velocity `0–127` (default: `0`).
-- `CHANNEL`: MIDI channel `0–15` (default: `0`).
-
-Min Firmware Version: 250
 
 ### `time`
 Prints the number of seconds since the Unix epoch. Takes no arguments. Note that Boppo does not currently try to keep accurate time.

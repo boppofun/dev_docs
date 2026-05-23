@@ -83,7 +83,9 @@ const config: Config = {
           position: "left",
           label: "Docs",
         },
-        { to: "/api", label: "HTTPS API", position: "left" },
+        { to: "/docs/wasm", label: "WASM", position: "left" },
+        { to: "/docs/websocket", label: "WebSocket", position: "left" },
+        { to: "/api", label: "HTTPS", position: "left" },
         {
           href: "https://github.com/boppofun",
           label: "GitHub",

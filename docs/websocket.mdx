@@ -59,7 +59,7 @@ error_message <message>
 
 ## Messages: Client → Device
 
-All messages are sent as a single WebSocket frame (text or binary). Fragmented messages are not supported.
+All messages are sent as a single WebSocket frame (all text except `set_lights` which is binary). Fragmented messages are not supported.
 
 ### `set_lights`
 
@@ -69,9 +69,7 @@ Sets the color of all 40 lights at once.
 set_lights <120 bytes>
 ```
 
-The frame begins with the ASCII prefix `set_lights ` (note the trailing space) followed immediately by 120 bytes of raw RGB data — 3 bytes per light (red, green, blue), for all 40 lights in order.
-
-The light ordering follows the [Lights struct ordering](https://docs.rs/boppo_core/latest/boppo_core/struct.Lights.html#ordering).
+The frame begins with the ASCII prefix `set_lights ` (note the trailing space) followed immediately by 120 bytes of raw RGB data — 3 bytes per light (red, green, blue), for all 40 lights in order. See [`Button Layout`](button-layout.mdx) for the light ordering.
 
 Because the payload contains raw binary after the ASCII prefix, this message should be sent as a binary WebSocket frame.
 
