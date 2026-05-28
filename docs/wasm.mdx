@@ -25,9 +25,21 @@ documentation for your language which will wrap the following in a more friendly
 The Boppo tablet WASM runtime is WASIp1 compatible but not all WASI features are supported (e.g. filesystem APIs are
 not yet available).
 
+### Error Codes
+
+Functions that return `i32` return `0` on success or a **negative** error code on failure:
+
+| Code | Meaning |
+|------|---------|
+| `-1` | **NotFound** — the handle does not exist or has already been unloaded |
+| `-2` | **PermissionDenied** — the path is outside the allowed directories |
+| `-3` | **InvalidPath** — the path string is not valid UTF-8 or cannot be resolved |
+| `-4` | **InvalidParameter** — an unrecognised parameter value was passed |
+| `-255` | **Unknown** — an unknown error occurred |
+
 ### Host Functions
 
-#### boppo_wasm_poll(timeout_ms: i32) -> i64
+#### boppo_poll(timeout_ms: i32) -> i64
 
 If timeout_ms is less than 0, the function will block indefinitely until an
 event occurs. If timeout_ms is greater than 0 the function will return
@@ -55,16 +67,15 @@ Event types:
     buttons (in index order). The 15th bit is if the current event is a press
     event (1) or a release event (0).
 
-* 2: **Audio**
+* 2: **Finished Audio**
 
-    An audio playback event occurred. The second byte is the audio sub-event type,
-    and the following 4 bytes are the audio handle (i32, little-endian) the event refers to.
+    A sound with an active controller has finished playing. The controller is
+    automatically freed when this event is returned from `boppo_poll`.
 
-    Sub-event types:
-    * 0: **Finished** — the audio clip finished playing. The activity should call
-      `boppo_unload_audio` to free the associated resources.
-    * 1: **BadHandleError** — a call to `boppo_play_audio` was made with a handle
-      that does not exist or has already been unloaded.
+    Payload:
+    * Bytes 1–7: controller ID as a 56-bit little-endian unsigned integer
+      (lower 7 bytes of the u64 controller ID). Valid controller IDs are
+      less than 2<sup>53</sup>.
 
 * 3: **Timeout**
 
@@ -80,43 +91,52 @@ The passed in pointer must point to a buffer of 120 bytes. Each light is represe
 
 The ordering of the lights is the same as defined in the Rust [Lights struct](https://docs.rs/boppo_core/latest/boppo_core/struct.Lights.html#ordering)
 
-#### boppo_open_audio_file(id: i32, path_ptr: *const u8, str_length: usize) -> i32
+#### boppo_execute_command(command_ptr: *const u8, command_len: usize) -> i32
 
-Open an audio file and associate it with a caller-provided integer handle `id`.
-The path must be a UTF-8 string passed as a pointer (`path_ptr`) with its byte length (`str_length`).
-The path is relative to the activity's directory (the folder containing the `.wasm` file).
-Absolute paths are accepted and treated as relative by stripping the leading `/`, matching
-the WASI file mapping convention.
+Executes a device command. The command must be a UTF-8 string passed as a pointer
+(`command_ptr`) with its byte length (`command_len`).
 
-Returns 0 on success, or a negative error code on failure. The `id` can then be used with the
-other audio functions to control playback.
+See the [Commands](./commands) reference for the full list of available commands.
 
-#### boppo_play_audio(handle: i32)
+Returns 0 on success, or `-255` (**Unknown**) on failure.
 
-Starts playback of the audio loaded under `handle`. If the audio was previously paused,
-calling this function resumes it. If the audio is already playing, this call is a no-op.
+#### boppo_play_sound_instruction(si_ptr: *const u8, si_len: usize) -> i32
 
-When playback finishes naturally, an **Audio/Finished** host event is sent to the activity.
-The activity should respond by calling `boppo_unload_audio` to free resources.
+Starts playback of a sound described by a JSON-encoded Sound Instruction. The JSON must be
+passed as a pointer (`si_ptr`) with its byte length (`si_len`).
 
-#### boppo_stop_audio(handle: i32)
+See [Sound Instruction](./sound-instruction) for the full format reference. The WASM API
+additionally supports the **controller** instruction.
 
-Stops playback of the audio loaded under `handle`. The audio clip remains loaded and can
-be replayed with `boppo_play_audio`.
+Path resolution within the instruction:
+* **Relative paths** resolve to the activity's directory (the folder containing the `.wasm` file).
+* **Absolute paths** (starting with `/`) resolve relative to the shared activities directory
+  (`/sd/activities`), giving access to shared resources such as common sound-effect files.
 
-#### boppo_unload_audio(handle: i32)
+Returns 0 on success, or a negative error code on failure (see [Error Codes](#error-codes)).
 
-Stops playback (if in progress) and frees all resources associated with `handle`.
-After this call the handle is invalid.
+#### boppo_set_sound_controller_parameter(controller_id: u64, parameter: i32, value: f32) -> i32
 
-#### boppo_set_audio_parameter(handle: i32, parameter: i32, value: f32)
+Sets a playback parameter on the sound identified by `controller_id`. The ID must match an `id`
+used in a `controller` instruction passed to `boppo_play_sound_instruction`. Supported
+parameter values:
 
-Sets a playback parameter on the audio loaded under `handle`. Supported parameter values:
-
-* 0: **Pause** — pause or unpause the clip. `value` of `0.0` unpauses; any other value pauses.
-* 1: **Volume** — set the playback volume. `1.0` is the default level; values above `1.0`
+* `0`: **Stop** — stop the sound and free the controller. `value` is ignored. A **Finished
+  Audio** event is sent.
+* `1`: **Pause** — pause or unpause the sound. `value` of `0.0` unpauses; any other value pauses.
+* `2`: **Volume** — set the volume multiplier. `1.0` is the default level; values above `1.0`
   amplify the signal.
-* 2: **Speed** — set the playback speed multiplier. `1.0` is normal speed.
+* `3`: **Speed** — set the playback speed multiplier. `1.0` is normal speed.
+
+Returns 0 on success, or a negative error code on failure (see [Error Codes](#error-codes)).
+Note that NotFound is returned if the `controller_id` does not match any active controller
+which includes when a sound has finished (since controllers are dropped when the sound finishes).
+Applications likely do not want to consider this an error.
+
+#### boppo_stop_all_sounds()
+
+Stops playback of all currently playing sounds. A **Finished Audio** event is sent for each
+sound that has an active controller. Sounds playing without a controller are stopped silently.
 
 ### Module Exports
 
