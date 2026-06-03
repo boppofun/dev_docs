@@ -39,13 +39,13 @@ button <index> <p|r> <currently_pressed>
 
 ### Sound Finished
 
-The device sends a text frame whenever a sound finishes playing if `notify_when_finished` was set to `true` when the sound was played:
+The device sends a text frame whenever a sound within a [Controller](./sound-instruction#controller) finishes playing:
 
 ```
-sound_finished <sound_id>
+sound_finished <controller_id>
 ```
 
-- `<sound_id>` — the ID of the sound that finished playing
+- `<controller_id>` — the `id` of the controller from the SoundInstruction
 
 ### Error Message
 
@@ -73,54 +73,45 @@ The frame begins with the ASCII prefix `set_lights ` (note the trailing space) f
 
 Because the payload contains raw binary after the ASCII prefix, this message should be sent as a binary WebSocket frame.
 
-### `create_and_play_sound`
+### `play_sound`
 
-Plays a sound described by a [SoundInstruction](sound-instruction.mdx).
+Plays a sound described by a [SoundInstruction](sound-instruction.mdx) encoded in JSON.
 
 ```
-create_and_play_sound <json>
+play_sound <json>
 ```
 
-The frame is `create_and_play_sound ` (with a trailing space) followed by a JSON object:
+The frame is `play_sound ` (with a trailing space) followed by a SoundInstruction JSON.
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `sound` | SoundInstruction | Yes | The sound to play |
-| `sound_id` | integer | No | If provided, the sound can later be controlled with `modify_sound`. Must be a non-negative integer (u32) |
-| `volume` | float | No (default: `1.0`) | Initial volume multiplier |
-| `speed` | float | No (default: `1.0`) | Initial playback speed multiplier |
-| `paused` | boolean | No (default: `false`) | Initial paused state. Ignored if `sound_id` is not provided. |
-| `notify_when_finished` | boolean | No (default: `false`) | Receive a notification when the sound finishes playing. Ignored if `sound_id` is not provided. |
+The path (if any) is relative to `/sd/activities/user/`.
 
-If `sound_id` is provided and a sound with that ID is already playing, the old sound is stopped and replaced.
-
-The path of the the SoundInstruction (if any) is relative to "/sd/activities/user/"
+To receive `sound_finished` notifications or to control a sound with `set_sound_param`, wrap it in a [Controller](./sound-instruction#controller) SoundInstruction with an `id`.
 
 **Example — play a file:**
 ```
-create_and_play_sound {"sound": "my_activity/beep.wav"}
+play_sound "my_activity/beep.wav"
 ```
 
 **Example — play a controllable looping sound:**
 ```
-create_and_play_sound {"sound": {"i": "repeat", "sound": "my_activity/music.wav"}, "sound_id": 1, "volume": 0.8}
+play_sound {"i": "controller", "sound": {"i": "repeat", "sound": "my_activity/music.wav"}, "id": 1, "volume": 0.8}
 ```
 
 See the [SoundInstruction](./sound-instruction) reference for the full format.
 
-### `modify_sound`
+### `set_sound_param`
 
-Modifies a currently playing sound that was started with a `sound_id`.
+Modifies a currently playing sound that was started with a [Controller](./sound-instruction#controller) SoundInstruction.
 
 ```
-modify_sound <json>
+set_sound_param <json>
 ```
 
-The frame is `modify_sound ` (with a trailing space) followed by a JSON object:
+The frame is `set_sound_param ` (with a trailing space) followed by a JSON object:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `sound_id` | number | Yes | ID of the sound to modify |
+| `controller_id` | number | Yes | The `id` of the controller from the SoundInstruction |
 | `pause` | boolean | No | Pause or unpause the sound |
 | `stop` | boolean | No | Set to `true` to stop and discard the sound |
 | `volume` | number | No | New volume multiplier |
@@ -128,12 +119,12 @@ The frame is `modify_sound ` (with a trailing space) followed by a JSON object:
 
 **Example — pause a sound:**
 ```
-modify_sound {"sound_id": 1, "pause": true}
+set_sound_param {"controller_id": 1, "pause": true}
 ```
 
 **Example — stop a sound:**
 ```
-modify_sound {"sound_id": 1, "stop": true}
+set_sound_param {"controller_id": 1, "stop": true}
 ```
 
 ### `stop_all_sounds`
