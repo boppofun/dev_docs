@@ -12,3 +12,6 @@ update-websocket:
 
 update-wasm:
     claude "Please update docs/wasm.mdx for the changes in ../device_software/libs/boppo_wasm_runner/src/* and ../rust_boppo_wasm/src/*"
+
+update-sound-instruction:
+    claude "Please update docs/sound-instruction.mdx for the changes in ../rust_boppo_core/src/audio/sound_instruction.rs"

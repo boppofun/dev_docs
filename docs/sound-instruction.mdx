@@ -4,7 +4,11 @@ title: Sound Instruction
 toc_max_heading_level: 4
 ---
 
-A Sound Instruction describes what audio to play. Its in JSON format for network, file and other APIs. The following are the available instructions and their JSON encoding:
+A Sound Instruction describes what audio to play. Its in JSON format for network, file and wasm APIs. 
+
+Your language binding likely has a convenient API for creating a Sound Instruction (e.g. `SoundBuilder` in the Rust API).
+
+The following are the available instructions and their JSON encoding:
 
 ### Play a file
 
@@ -36,6 +40,51 @@ Repeats a sound. Omit `times` to loop forever.
 
 ```json
 {"i": "repeat", "sound": "my_activity/tick.wav", "times": 4}
+```
+
+### Volume
+
+Applies a volume multiplier to a sound. Use `1.0` for original volume, `0.5` for half, `2.0` for double. For dynamic volume changes after playback has started, use a [Controller](#controller) instead.
+
+```json
+{"i": "volume", "multiplier": 0.5, "sound": "my_activity/music.wav"}
+```
+
+### Speed
+
+Applies a speed multiplier to a sound. Use `1.0` for original speed, `2.0` for double speed. Pitch adjusts proportionally (faster → higher pitch). For dynamic speed changes after playback has started, use a [Controller](#controller) instead.
+
+```json
+{"i": "speed", "multiplier": 2.0, "sound": "my_activity/voice.wav"}
+```
+
+### Controller
+
+Makes a sound controllable at runtime. You can adjust speed, volume, and paused state, stop the sound, and receive notifications when it finishes.
+
+- `id`: unique identifier for this controller (integer, 0 ≤ id < 2^53, required)
+- `speed`: initial speed multiplier (optional, defaults to `1.0`)
+- `volume`: initial volume multiplier (optional, defaults to `1.0`)
+- `paused`: whether the sound starts paused (optional, defaults to `false`)
+
+Controllers cannot be nested inside a `repeat`.
+
+```json
+{"i": "controller", "sound": "my_activity/music.wav", "id": 1, "speed": 1.0, "volume": 1.0, "paused": false}
+```
+
+### Timed Commands
+
+Executes commands at specific millisecond offsets during playback of a sound. Commands are strings of the form `"<MILLIS> <COMMAND>"`.
+
+- `sound`: the sound to play (required)
+- `commands_path`: path to a file containing commands (optional)
+- `commands`: inline array of command strings (optional)
+
+If both `commands_path` and `commands` are provided, they are merged.
+
+```json
+{"i": "timed_commands", "sound": "my_activity/bg.wav", "commands_path": "my_activity/cues.txt", "commands": ["0 START", "5000 STOP"]}
 ```
 
 ### Silence
