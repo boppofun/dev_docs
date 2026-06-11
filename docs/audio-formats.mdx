@@ -1,0 +1,12 @@
+---
+id: audio-formats
+title: Audio Formats
+---
+
+Boppo natively outputs 16-bit/48kHz/mono. For optimal performance file formats should be converted to match (or be 24kHz, 12kHz for reduced file size if the audio content allows).
+
+Boppo supports the following audio file formats:
+
+- MP3 - Should be the default choice for most audio files played on Boppo but especially for large files. Boppo only supports playing around three MP3 files simultaneously. It is about 10% the file size of a WAV.
+- QOA ([The Quite OK  Audio Format](https://qoaformat.org/)) - A lossy format that is 20% the file size of WAV but uses very little RAM and processing power. Great for small sound effect files that will be played simultaneously with other audio content or for audio content that will be played with 10 other tracks.
+- WAV - While it is supported, it is not recommended as its file size is much larger than MP3 and QOA.
