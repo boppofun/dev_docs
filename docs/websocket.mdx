@@ -4,19 +4,27 @@ title: WebSocket API
 toc_max_heading_level: 4
 ---
 
-:::info
-COMING SOON: This API is currently in development and will be released soon.
-:::
+Boppo exposes a WebSocket API at `wss://boppo-<SERIAL_NUMBER>.local/ws` for real-time control of lights, audio, and button event streaming.
 
-Boppo exposes a WebSocket API at `ws://boppo-<SERIAL_NUMBER>.local/ws` for real-time control of lights, audio, and button event streaming. 
-
-Connecting to this endpoint automatically starts the `websocket_server` activity on the Boppo tablet (and stops any currently running activity). Only one WebSocket session is active at a time — a new connection closes any existing connection.
+Connecting to this endpoint automatically starts the `websocket_server` activity on the Boppo tablet (and stops any currently running activity). Only one WebSocket session is active at a time, a new connection closes any existing connection.
 
 If you are looking to develop an activity using the WebSocket API, you can use an existing library that implements the protocol below.
 
-* Rust: [`boppo_websocket_controller`](https://github.com/boppofun/rust_boppo_websocket_controller)
+* Rust: [`boppo_websocket`](https://github.com/boppofun/rust_boppo_websocket)
 
 The API defined below is the low level networking protocol:
+
+## Authentication
+
+The WebSocket upgrade request must include an `Authorization` HTTP header:
+
+```
+Authorization: Bearer <password>
+```
+
+Connections without a valid token are rejected immediately.
+
+The device uses a self-signed TLS certificate. See the [HTTPS](https://developer.boppo.com/api) documentation for details.
 
 ## Messages: Device → Client
 
@@ -59,7 +67,7 @@ error_message <message>
 
 ## Messages: Client → Device
 
-All messages are sent as a single WebSocket frame (all text except `set_lights` which is binary). Fragmented messages are not supported.
+All messages are sent as a single WebSocket frame (all text except `set_lights` which is binary). Fragmented messages are not supported. Messages are limited to **256 bytes**.
 
 ### `set_lights`
 
