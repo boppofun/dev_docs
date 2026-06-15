@@ -6,9 +6,12 @@ toc_max_heading_level: 4
 
 Boppo provides a WASM API to program new activities, interactive content, and games that run directly on Boppo.
 
+## Existing Language Libraries
+
 To get started developing your own activities quickly its best to read the documentation for your language of choice:
 
 * Rust: [boppofun/rust_boppo_wasm](https://github.com/boppofun/rust_boppo_wasm)
+  * Run `cargo generate boppofun/rust_boppo_wasm_template` to create a new project using the suggested [template](https://github.com/boppofun/rust_boppo_wasm_template)
 * AssemblyScript: coming soon
 * If your preferred langauge does not exist and it has the ability to compile to WASM modules suitable for an ESP32
 [let us know] your interested in a language binding or feel free to build your own using the WASM API below.
@@ -140,13 +143,13 @@ sound that has an active controller. Sounds playing without a controller are sto
 
 As defined by WASIp1 this is the function the runtime will call to start the WASM activity. When this function returns the runtime will return to the active menu.
 
-## Runtime Environment
+### Runtime Environment
 
-### Stack Size
+#### Stack Size
 
 The WASM stack is **32 KB**.
 
-### Environment Variables
+#### Environment Variables
 
 | Variable | Description |
 |----------|-------------|
