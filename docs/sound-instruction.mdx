@@ -73,6 +73,14 @@ Controllers cannot be nested inside a `repeat`.
 {"i": "controller", "sound": "my_activity/music.wav", "id": 1, "speed": 1.0, "volume": 1.0, "paused": false}
 ```
 
+### Sine wave
+
+Generates a sine wave at the given frequency. Plays indefinitely until stopped (e.g. via a wrapping [Controller](#controller)).
+
+```json
+{"i": "sine_wave", "hz": 440.0}
+```
+
 ### Timed Commands
 
 Executes commands at specific millisecond offsets during playback of a sound. Commands are strings of the form `"<MILLIS> <COMMAND>"`.
