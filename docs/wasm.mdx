@@ -31,7 +31,7 @@ Functions that return `i32` return `0` on success or a **negative** error code o
 | Code | Meaning |
 |------|---------|
 | `-1` | **NotFound** — the handle does not exist or has already been unloaded |
-| `-2` | **PermissionDenied** — the path is outside the allowed directories |
+| `-2` | **PermissionDenied** — the path is outside the allowed directories, or the operation is not allowed |
 | `-3` | **InvalidPath** — the path string is not valid UTF-8 or cannot be resolved |
 | `-4` | **InvalidParameter** — an unrecognised parameter value was passed |
 | `-255` | **Unknown** — an unknown error occurred |
@@ -96,8 +96,13 @@ Executes a device command. The command must be a UTF-8 string passed as a pointe
 (`command_ptr`) with its byte length (`command_len`).
 
 See the [Commands](./commands) reference for the full list of available commands.
+Activities may only run an allowed subset of commands unless [developer mode](./developer-mode) is enabled.
 
-Returns 0 on success, or `-255` (**Unknown**) on failure.
+Returns 0 on success, or a negative error code:
+
+- `-2` (**PermissionDenied**) — the command is not allowed in activities and developer mode is off
+- `-4` (**InvalidParameter**) — the pointer is invalid, the string is not valid UTF-8, or the command cannot be parsed
+- `-255` (**Unknown**) — the command failed to execute
 
 #### boppo_play_sound_instruction(si_ptr: *const u8, si_len: usize) -> i32
 
