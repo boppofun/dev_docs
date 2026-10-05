@@ -68,7 +68,8 @@ Event types:
 
 * 2: **Finished Audio**
 
-    A sound with an active controller has finished playing. The controller is
+    A sound with an active controller has finished playing, was stopped, or was
+    cut short by an enclosing instruction such as `finish_after`. The controller is
     automatically freed when this event is returned from `boppo_poll`.
 
     Payload:
