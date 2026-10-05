@@ -62,6 +62,8 @@ Applies a speed multiplier to a sound. Use `1.0` for original speed, `2.0` for d
 
 Makes a sound controllable at runtime. You can adjust speed, volume, and paused state, stop the sound, and receive notifications when it finishes.
 
+A finished notification is sent when the sound ends, whether it plays to completion, is stopped, or is cut short by an enclosing instruction such as [Finish after](#finish-after).
+
 - `id`: unique identifier for this controller (integer, 0 ≤ id < 2^53, required)
 - `speed`: initial speed multiplier (optional, defaults to `1.0`)
 - `volume`: initial volume multiplier (optional, defaults to `1.0`)
@@ -101,6 +103,19 @@ Inserts a pause.
 
 ```json
 {"i": "silence", "millis": 1500}
+```
+
+### Finish after
+
+Plays a sound for at most `millis` milliseconds, then stops it. Useful for ending long or looping sounds early.
+
+- `millis`: maximum duration in milliseconds (required)
+- `sound`: the sound to play (required)
+
+Any [Controller](#controller) inside the sound sends its finished notification when the sound is cut short, the same as if it had finished on its own.
+
+```json
+{"i": "finish_after", "millis": 1500, "sound": {"i": "repeat", "sound": "my_activity/loop.wav"}}
 ```
 
 ### Speak number

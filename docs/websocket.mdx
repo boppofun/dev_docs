@@ -47,7 +47,7 @@ button <index> <p|r> <currently_pressed>
 
 ### Sound Finished
 
-The device sends a text frame whenever a sound within a [Controller](./sound-instruction#controller) finishes playing:
+The device sends a text frame whenever a sound within a [Controller](./sound-instruction#controller) finishes playing, is stopped, or is cut short by an enclosing instruction such as [Finish after](./sound-instruction#finish-after):
 
 ```
 sound_finished <controller_id>
