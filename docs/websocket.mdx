@@ -8,9 +8,24 @@ Boppo exposes a WebSocket API at `wss://boppo-<SERIAL_NUMBER>.local/ws` for real
 
 Connecting to this endpoint automatically starts the `websocket_server` activity on the Boppo tablet (and stops any currently running activity). Only one WebSocket session is active at a time, a new connection closes any existing connection.
 
-If you are looking to develop an activity using the WebSocket API, you can use an existing library that implements the protocol below.
+If you are looking to develop using the WebSocket API, you can use an existing library that implements the protocol below.
 
 * Rust: [`boppo_websocket`](https://github.com/boppofun/rust_boppo_websocket)
+
+:::tip Building a game or an interactive activity?
+
+We recommend using the [WASM API](./wasm) for games and highly interactive activities.
+
+WASM activities run directly on the Boppo tablet, which gives you:
+
+* **No network latency**: button presses, lights, and audio respond instantly without a round trip over Wi-Fi
+* **The best APIs**: the WASM API is the most complete and is where new features land first
+* **More performant rendering**: lights and audio are driven on-device rather than streamed over the network
+* **Standalone activities**: no computer needs to stay connected for the activity to run
+
+The WebSocket API is best suited for prototyping, debugging, or integrations that need to run on another computer.
+
+:::
 
 The API defined below is the low level networking protocol:
 
