@@ -171,6 +171,8 @@ paths:
           description: Unauthorized.
         "403":
           description: Developer mode not enabled and is required for the specified path.
+        "404":
+          description: File not found.
 
   /files/remove-dir:
     post:
@@ -190,6 +192,8 @@ paths:
           description: Unauthorized.
         "403":
           description: Developer mode not enabled.
+        "404":
+          description: Directory not found.
 
   /files/remove-dir-all:
     post:
@@ -209,6 +213,8 @@ paths:
           description: Unauthorized.
         "403":
           description: Developer mode not enabled.
+        "404":
+          description: Directory not found.
 
   /files/read-dir:
     get:
@@ -256,6 +262,8 @@ paths:
           description: Unauthorized.
         "403":
           description: Developer mode not enabled.
+        "404":
+          description: File not found.
 
   /get-password:
     post:
