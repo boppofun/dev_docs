@@ -238,11 +238,13 @@ Sets the display orientation.
 - `0`: normal orientation.
 - `180`: flipped/rotated 180°.
 
-### `disable_tiny_usb`
-Disables TinyUSB and writes a marker file so USB remains disabled across reboots. Takes no arguments.
+### `tinyusb [enable|disable]`
+Shows or changes whether Boppo uses TinyUSB for its USB connection. The setting persists across reboots.
+- No argument: prints the saved setting (`TinyUSB enabled` or `TinyUSB disabled`).
+- `enable`: Boppo shows up as a USB serial port plus a USB MIDI device. This is the default.
+- `disable`: Boppo shows up as the ESP32-S3's built-in USB-Serial-JTAG instead, which shows the boot logs.
 
-### `enable_tiny_usb`
-Removes the TinyUSB disable marker and re-initializes TinyUSB. Takes no arguments.
+`enable` and `disable` restart Boppo so the change takes effect.
 
 ### `time`
 Prints the number of seconds since the Unix epoch. Takes no arguments. Note that Boppo does not currently try to keep accurate time.
