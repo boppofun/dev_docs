@@ -54,7 +54,8 @@ paths:
   /set-device-name:
     post:
       summary: Set Device Name
-      description: Sets the name of the device.
+      description: Sets the name of the device. Deprecated use /command "device_name"
+      deprecated: true
       requestBody:
         required: true
         content:
