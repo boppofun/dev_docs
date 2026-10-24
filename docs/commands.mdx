@@ -8,7 +8,14 @@ title: Commands
 Boppo exposes a minimal shell command interface for device management, debugging, and development.
 These commands may change or be removed at any time.
 
-Commands are a single line. Each argument may be single quote enclosed. There is currently no way to escape single quotes.
+Commands are a single line of space separated arguments. An argument may be enclosed in single quotes to include
+whitespace (e.g. `device_name 'Living Room'`). Within a quoted argument two single quotes (`''`) are one literal single
+quote (e.g. `device_name 'Sam''s Boppo'` sets `Sam's Boppo`), and `''` alone is an empty argument.
+
+A single quote may only start an argument (and so is only allowed at the start of the command or after whitespace) and a
+closing single quote must be followed by whitespace or the end of the command. So an argument containing a single quote
+must be quoted: `device_name Sam's` is invalid. The command name can not contain single quotes. Backslashes have no
+special meaning.
 
 The following commands can be executed via NFC Tags, HTTPS /command endpoint, or via USB serial port. Most of the commands require [developer mode](./developer-mode) to be enabled.
 
@@ -30,6 +37,11 @@ Get or set the maximum allowable volume.
 Get or set the display brightness.
 - No argument: prints the current brightness level.
 - `VALUE`: integer `0–255` to set the brightness.
+
+### `device_name [NAME]`
+Get or set the device's name.
+- No argument: prints the current name.
+- `NAME`: sets the name (1 to 64 bytes, without `"` or `/`). Quote names containing whitespace or single quotes.
 
 ### `dev_mode [true|false]`
 Get or set developer mode.
